@@ -68,9 +68,19 @@ namespace WindowsFormsApp1
                 var logincount = Login();
                 if (logincount == 1)
                 {
-                    Form1 main = new Form1();
-                    this.Hide();
-                    main.Show();
+                    if(comboBox1.Text == "Admin")
+                    {
+                        adminPage page = new adminPage();
+                        this.Hide();
+                        page.Show();
+                    }
+                    else
+                    {
+                        Form1 main = new Form1();
+                        this.Hide();
+                        main.Show();
+                    }
+                    
                 }
                 else
                 {
