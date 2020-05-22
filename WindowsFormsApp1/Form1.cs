@@ -19,7 +19,7 @@ namespace WindowsFormsApp1
 
 
         SqlConnection connection = new SqlConnection(@"Data Source = Meecaad ; Initial Catalog = testing ; User ID = sa ; Password = ahmed@1212");
-
+        int bookid;
         //TODO: validations
 
         private void clearfeilds()
@@ -46,8 +46,7 @@ namespace WindowsFormsApp1
             images = brs.ReadBytes((int)streem.Length);
             try
             {
-                SqlCommand command = new SqlCommand("insert into books values ( @id , @title , @isbn , @category, @cover)", connection);
-                command.Parameters.AddWithValue("@id", textBox1.Text);
+                SqlCommand command = new SqlCommand("insert into books values ( @title , @isbn , @category, @cover)", connection);
                 command.Parameters.AddWithValue("@title", textBox2.Text);
                 command.Parameters.AddWithValue("@isbn", textBox3.Text);
                 command.Parameters.AddWithValue("@category", comboBox1.Text);
@@ -94,7 +93,7 @@ namespace WindowsFormsApp1
             try
             {
                 SqlCommand command = new SqlCommand("update books set title = @title , isbn = @isbn , category = @category where bookid =  @id ", connection);
-                command.Parameters.AddWithValue("@id", textBox1.Text);
+                command.Parameters.AddWithValue("@id", bookid);
                 command.Parameters.AddWithValue("@title", textBox2.Text);
                 command.Parameters.AddWithValue("@isbn", textBox3.Text);
                 command.Parameters.AddWithValue("@category", comboBox1.Text);
@@ -115,7 +114,7 @@ namespace WindowsFormsApp1
             try
             {
                 SqlCommand command = new SqlCommand("delete from books where bookid =  @id ", connection);
-                command.Parameters.AddWithValue("@id", textBox1.Text);
+                command.Parameters.AddWithValue("@id", bookid);
                 connection.Open();
                 command.ExecuteNonQuery();
                 MessageBox.Show("Book Deleted");
@@ -155,6 +154,7 @@ namespace WindowsFormsApp1
             pictureBox1.Image = Image.FromStream(ms);
 
             textBox1.Text = dataGridView1.CurrentRow.Cells[0].Value.ToString();
+            bookid = Convert.ToInt32(dataGridView1.CurrentRow.Cells[0].Value);
             textBox2.Text = dataGridView1.CurrentRow.Cells[1].Value.ToString();
             textBox3.Text = dataGridView1.CurrentRow.Cells[2].Value.ToString();
             comboBox1.Text = dataGridView1.CurrentRow.Cells[3].Value.ToString();
