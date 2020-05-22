@@ -20,6 +20,8 @@ namespace WindowsFormsApp1
 
         SqlConnection connection = new SqlConnection(@"Data Source = Meecaad ; Initial Catalog = testing ; User ID = sa ; Password = ahmed@1212");
         int bookid;
+        string wanted_path = "";
+        byte[] images = null;
         //TODO: validations
 
         private void clearfeilds()
@@ -29,7 +31,8 @@ namespace WindowsFormsApp1
             textBox2.Text = "";
             textBox3.Text = "";
             comboBox1.Text = "";
-           
+            comboBox2.Text = "";
+            //images = null;
         }
 
         public Form1()
@@ -37,13 +40,19 @@ namespace WindowsFormsApp1
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void tobytes()
         {
-            //save image as bytes
-            byte[] images = null;
+            //convert image to bytes
+            //byte[] images = null;
             FileStream streem = new FileStream(pictureBox1.ImageLocation, FileMode.Open, FileAccess.Read);
             BinaryReader brs = new BinaryReader(streem);
             images = brs.ReadBytes((int)streem.Length);
+
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+            tobytes();
             try
             {
                 SqlCommand command = new SqlCommand("insert into books values ( @title , @isbn , @category, @cover)", connection);
@@ -59,13 +68,12 @@ namespace WindowsFormsApp1
                 //call the load function of the this form to reload the form after saving item into the database
                 Form1_Load(sender, e);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-            
-          
 
+            
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -75,28 +83,37 @@ namespace WindowsFormsApp1
 
         private void filldatagridviews(string value)
         {
-            connection.Open();
-            SqlDataAdapter sqlda = new SqlDataAdapter("select * from books where title like '%"+ value + "%'", connection);
-            DataTable dt = new DataTable();
-            sqlda.Fill(dt);
-            dataGridView1.RowTemplate.Height = 60;
-            dataGridView1.DataSource = dt;
-            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            DataGridViewImageColumn im = new DataGridViewImageColumn();
-            im = (DataGridViewImageColumn)dataGridView1.Columns[4];
-            im.ImageLayout = DataGridViewImageCellLayout.Stretch;
-            connection.Close();
-            clearfeilds();
+            try
+            {
+                connection.Open();
+                SqlDataAdapter sqlda = new SqlDataAdapter("select * from books where title like '%" + value + "%'", connection);
+                DataTable dt = new DataTable();
+                sqlda.Fill(dt);
+                dataGridView1.RowTemplate.Height = 60;
+                dataGridView1.DataSource = dt;
+                dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                DataGridViewImageColumn im = new DataGridViewImageColumn();
+                im = (DataGridViewImageColumn)dataGridView1.Columns[4];
+                im.ImageLayout = DataGridViewImageCellLayout.Stretch;
+                connection.Close();
+                clearfeilds();
+            }catch(Exception eg)
+            {
+                MessageBox.Show(eg.ToString());
+            }
+
         }
         private void button2_Click(object sender, EventArgs e)
         {
+            tobytes();
             try
             {
-                SqlCommand command = new SqlCommand("update books set title = @title , isbn = @isbn , category = @category where bookid =  @id ", connection);
+                SqlCommand command = new SqlCommand("update books set title = @title , isbn = @isbn , category = @category ,cover = @img where bookid =  @id ", connection);
                 command.Parameters.AddWithValue("@id", bookid);
                 command.Parameters.AddWithValue("@title", textBox2.Text);
                 command.Parameters.AddWithValue("@isbn", textBox3.Text);
                 command.Parameters.AddWithValue("@category", comboBox1.Text);
+               command.Parameters.AddWithValue("@img", images);
                 connection.Open();
                 command.ExecuteNonQuery();
                 MessageBox.Show("Book Info Updated");
@@ -136,7 +153,7 @@ namespace WindowsFormsApp1
         {
             //browse the image into picturebox 
             //declare wanted_path as string 
-           string wanted_path = Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory()));
+            wanted_path = Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory()));
             DialogResult result = openFileDialog1.ShowDialog();
             openFileDialog1.Filter = "JPEG Files (*.jpeg)|*.jpeg|PNG Files(*.png)|*.png | JPG Files (*.jpg ) | *.jpg |GIF Files (*.gif) |*.gif ";
             if (result == DialogResult.OK)
@@ -152,7 +169,7 @@ namespace WindowsFormsApp1
             Byte[] img = (Byte[])dataGridView1.CurrentRow.Cells[4].Value; //this is the row that image lies on dataTable
             MemoryStream ms = new MemoryStream(img);
             pictureBox1.Image = Image.FromStream(ms);
-
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             textBox1.Text = dataGridView1.CurrentRow.Cells[0].Value.ToString();
             bookid = Convert.ToInt32(dataGridView1.CurrentRow.Cells[0].Value);
             textBox2.Text = dataGridView1.CurrentRow.Cells[1].Value.ToString();
@@ -181,6 +198,11 @@ namespace WindowsFormsApp1
         {
             int num = countbooksincategory();
             label7.Text = num.ToString();
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            clearfeilds();
         }
     }
 }
